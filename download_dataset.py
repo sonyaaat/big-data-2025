@@ -3,6 +3,7 @@ import urllib.request
 import gzip
 import shutil
 
+
 data_dir = "imdb_data"
 os.makedirs(data_dir, exist_ok=True)
 
