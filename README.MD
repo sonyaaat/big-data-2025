@@ -11,7 +11,6 @@ install dataset from https://datasets.imdbws.com/
 
 Requirements:
 
-- Python (3.8+)
 - Docker
 
 
