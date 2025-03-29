@@ -2,10 +2,10 @@ import os
 import urllib.request
 import gzip
 import shutil
+from config import Config
 
 
-data_dir = "imdb_data"
-os.makedirs(data_dir, exist_ok=True)
+os.makedirs(Config.DATA_DIR, exist_ok=True)
 
 files = [
     "name.basics.tsv.gz",
@@ -23,14 +23,14 @@ print("Downloading IMDB datasets...")
 
 for file in files:
     url = base_url + file
-    file_path = os.path.join(data_dir, file)
+    file_path = os.path.join(Config.DATA_DIR, file)
     print(f"Downloading {file}...")
     urllib.request.urlretrieve(url, file_path)
 
 print("All downloads complete! Extracting files...")
 
 for file in files:
-    file_path = os.path.join(data_dir, file)
+    file_path = os.path.join(Config.DATA_DIR, file)
     extracted_path = file_path.replace(".gz", "")
     print(f"Extracting {file}...")
     with gzip.open(file_path, 'rb') as f_in, open(extracted_path, 'wb') as f_out:
@@ -39,4 +39,4 @@ for file in files:
 
 print("Extraction complete!")
 print("Downloaded and extracted files:")
-print(os.listdir(data_dir))
+print(os.listdir(Config.DATA_DIR))

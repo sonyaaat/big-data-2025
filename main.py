@@ -2,12 +2,15 @@ from pyspark.sql import SparkSession
 import os
 from pyspark.sql import DataFrame
 from typing import Dict
+from config import Config
+
 from schemas import (
     schema_title_basics,
     schema_title_episode,
     schema_title_crew,
     schema_title_akas
 )
+
 from imdb_spark_utils import (
     initialize_spark,
     load_dataframe,
@@ -18,8 +21,6 @@ from imdb_spark_utils import (
     display_dataframe_info
 )
 
-DATA_DIR = "imdb_data"
-FILE_EXTENSION = ".tsv"
 spark_session = initialize_spark("IMDB Data Processing")
 
 
@@ -31,7 +32,7 @@ def check_pyspark() -> None:
 
     print("Spark Session initialized.")
     print("Checking available files...")
-    files = [f for f in os.listdir(DATA_DIR) if f.endswith(".tsv")]
+    files = [f for f in os.listdir(Config.DATA_DIR) if f.endswith(".tsv")]
 
     if not files:
         print("No TSV files found. Make sure data is downloaded and extracted.")
@@ -39,7 +40,7 @@ def check_pyspark() -> None:
 
     print("Found files:", files)
 
-    sample_file = os.path.join(DATA_DIR, files[0])
+    sample_file = os.path.join(Config.DATA_DIR, files[0])
     print(f"Loading sample file: {sample_file}")
 
     df = spark.read.option("header", "true").option("sep", "\t").csv(sample_file)
@@ -59,16 +60,16 @@ def process_imdb_data() -> Dict[str, DataFrame]:
     dataframes = {}
 
     dataframes["basics"] = transform_title_basics(
-        load_dataframe(spark_session, schema_title_basics, f"{DATA_DIR}/title.basics{FILE_EXTENSION}")
+        load_dataframe(spark_session, schema_title_basics, f"{Config.DATA_DIR}/title.basics{Config.FILE_EXTENSION}")
     )
     dataframes["akas"] = transform_title_akas(
-        load_dataframe(spark_session, schema_title_akas, f"{DATA_DIR}/title.akas{FILE_EXTENSION}")
+        load_dataframe(spark_session, schema_title_akas, f"{Config.DATA_DIR}/title.akas{Config.FILE_EXTENSION}")
     )
     dataframes["crew"] = transform_title_crew(
-        load_dataframe(spark_session, schema_title_crew, f"{DATA_DIR}/title.crew{FILE_EXTENSION}")
+        load_dataframe(spark_session, schema_title_crew, f"{Config.DATA_DIR}/title.crew{Config.FILE_EXTENSION}")
     )
     dataframes["episode"] = transform_title_episode(
-        load_dataframe(spark_session, schema_title_episode, f"{DATA_DIR}/title.episode{FILE_EXTENSION}")
+        load_dataframe(spark_session, schema_title_episode, f"{Config.DATA_DIR}/title.episode{Config.FILE_EXTENSION}")
     )
 
     for name, df in dataframes.items():
