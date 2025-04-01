@@ -79,24 +79,17 @@ def process_imdb_data() -> Dict[str, DataFrame]:
         load_dataframe(spark_session, schema_title_episode, f"{Config.DATA_DIR}/title.episode{Config.FILE_EXTENSION}")
     )
     dataframes["ratings"] = transform_title_ratings(
-        load_dataframe(spark_session, schema_title_ratings, f"{DATA_DIR}/title.ratings{FILE_EXTENSION}")
+        load_dataframe(spark_session, schema_title_ratings, f"{Config.DATA_DIR}/title.ratings{Config.FILE_EXTENSION}")
     )
     dataframes["principals"] = transform_title_principals(
-        load_dataframe(spark_session, schema_title_principals, f"{DATA_DIR}/title.principals{FILE_EXTENSION}")
+        load_dataframe(spark_session, schema_title_principals, f"{Config.DATA_DIR}/title.principals{Config.FILE_EXTENSION}")
     )
     dataframes["name"] = transform_name_basics(
-        load_dataframe(spark_session, schema_name_basics, f"{DATA_DIR}/name.basics{FILE_EXTENSION}")
+        load_dataframe(spark_session, schema_name_basics, f"{Config.DATA_DIR}/name.basics{Config.FILE_EXTENSION}")
     )
 
     for name, df in dataframes.items():
         display_dataframe_info(df, name)
-
-    display_numeric_statistics(dataframes["basics"], ["startYear", "endYear", "runtimeMinutes"])
-    display_numeric_statistics(dataframes["akas"], ["ordering"])
-    display_numeric_statistics(dataframes["episode"], ["seasonNumber", "episodeNumber"])
-    display_numeric_statistics(dataframes["ratings"], ["averageRating", "numVotes"])
-    display_numeric_statistics(dataframes["principals"], ["ordering"])
-    display_numeric_statistics(dataframes["name"], ["birthYear", "deathYear"])
 
     return dataframes
 

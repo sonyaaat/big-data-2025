@@ -44,26 +44,7 @@ def transform_title_crew(df: DataFrame) -> DataFrame:
 
 def transform_title_episode(df: DataFrame) -> DataFrame:
     return clean_null_values(df)
-def display_numeric_statistics(df: DataFrame, numeric_columns: Optional[List[str]] = None) -> None:
-    if numeric_columns is None:
-        numeric_columns = [field.name for field in df.schema.fields
-                           if isinstance(field.dataType, (t.IntegerType, t.DoubleType, t.FloatType))]
 
-    if not numeric_columns:
-        print("\nNo numeric columns to analyze.")
-        return
-
-    print(f"\nStatistics for numeric columns ({numeric_columns}):")
-    df.describe(numeric_columns).show(truncate=False)
-
-    print("Additional statistics (median and mode):")
-    aggregations = []
-    for col in numeric_columns:
-        aggregations.extend([
-            F.percentile_approx(F.col(col), 0.5).alias(f"{col}_median"),
-            F.mode(F.col(col)).alias(f"{col}_mode")
-        ])
-    df.agg(*aggregations).show(truncate=False)
 
 def display_dataframe_info(df: DataFrame, name: str) -> None:
     print(f"\n=== {name} ===")
