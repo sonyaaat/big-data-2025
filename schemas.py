@@ -39,3 +39,30 @@ schema_title_episode = t.StructType([
     t.StructField("seasonNumber", t.IntegerType(), nullable=True),
     t.StructField("episodeNumber", t.IntegerType(), nullable=True)
 ])
+
+# Схема для файлу title.principals.tsv
+schema_title_principals = t.StructType([
+    t.StructField("tconst", t.StringType(), nullable=False),
+    t.StructField("ordering", t.IntegerType(), nullable=True),
+    t.StructField("nconst", t.StringType(), nullable=False),
+    t.StructField("category", t.StringType(), nullable=True),
+    t.StructField("job", t.StringType(), nullable=True),
+    t.StructField("characters", t.StringType(), nullable=True)
+])
+
+# Схема для файлу title.ratings.tsv
+schema_title_ratings = t.StructType([
+    t.StructField("tconst", t.StringType(), nullable=False),
+    t.StructField("averageRating", t.DoubleType(), nullable=False),
+    t.StructField("numVotes", t.IntegerType(), nullable=True)
+])
+
+# Схема для файлу name.basics.tsv
+schema_name_basics = t.StructType([
+    t.StructField("nconst", t.StringType(), nullable=False),
+    t.StructField("primaryName", t.StringType(), nullable=True),
+    t.StructField("birthYear", t.IntegerType(), nullable=True),
+    t.StructField("deathYear", t.IntegerType(), nullable=True),
+    t.StructField("primaryProfession", t.StringType(), nullable=True),
+    t.StructField("knownForTitles", t.StringType(), nullable=True)
+])
