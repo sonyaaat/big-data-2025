@@ -39,7 +39,7 @@ def check_pyspark() -> None:
 
     print("Spark Session initialized.")
     print("Checking available files...")
-    files = [f for f in os.listdir(Config.DATA_DIR) if f.endswith(".tsv")]
+    files = [f for f in os.listdir(Config.DATA_DIR) if f.endswith(Config.FILE_EXTENSION)]
 
     if not files:
         print("No TSV files found. Make sure data is downloaded and extracted.")
