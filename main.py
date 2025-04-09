@@ -3,6 +3,7 @@ import os
 from pyspark.sql import DataFrame
 from typing import Dict
 from config import Config
+import pyspark.sql.types as t
 
 from schemas import (
     schema_title_basics,
@@ -22,10 +23,12 @@ from imdb_spark_utils import (
     transform_title_crew,
     transform_title_episode,
     display_dataframe_info,
+    display_numerical_statistics,
+    display_categorical_distincts,
+    correlation_runtime_rating,
     transform_title_ratings,
     transform_title_principals,
     transform_name_basics
-
 )
 
 spark_session = initialize_spark("IMDB Data Processing")
@@ -89,7 +92,19 @@ def process_imdb_data() -> Dict[str, DataFrame]:
     )
 
     for name, df in dataframes.items():
+
+        # general info: rows, columns, schema
         display_dataframe_info(df, name)
+
+        # choosing only Integer & Double columns
+        df.select([f.name for f in df.schema.fields if isinstance(f.dataType, t .IntegerType) or isinstance(f.dataType, t .DoubleType)]).summary().show()
+        # or by .decribe() method (will not show quartiles) -> call display_numerical_statistics() function
+
+        # showing distinct values of each column
+        display_categorical_distincts(df, name)
+
+    # correlation between runtime and rating
+    correlation_runtime_rating(dataframes["basics"], dataframes["ratings"])
 
     return dataframes
 
