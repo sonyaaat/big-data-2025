@@ -3,6 +3,7 @@ import pyspark.sql.types as t
 import pyspark.sql.functions as F
 from typing import List, Optional
 
+
 def initialize_spark(app_name: str = "IMDB Data Processor") -> SparkSession:
     return SparkSession.builder.appName(app_name).getOrCreate()
 
@@ -57,6 +58,46 @@ def display_dataframe_info(df: DataFrame, name: str) -> None:
     print("Columns:", df.columns)
     print("Number of columns:", len(df.columns))
     print("Number of rows:", df.count())
+
+
+def display_numerical_statistics(df, columns: list[str]):
+    print("\nStatistics for numerical columns:")
+    df.describe(columns).show()
+
+
+def display_categorical_distincts(df: DataFrame, name: str, max_distinct: int = 20, sample_size: int = 5) -> None:
+    print(f"\nDistinct categorical values for '{name}' (≤ {max_distinct} unique values):\n")
+
+    string_cols = [f.name for f in df.schema.fields if isinstance(f.dataType, t.StringType)]
+
+    for col_name in string_cols:
+        distinct_vals = df.select(col_name).distinct()
+        distinct_count = distinct_vals.count()
+
+        # displaying as categories only when there are <= 20 distinct vals
+        if distinct_count <= max_distinct:
+            sample_vals = distinct_vals.limit(sample_size).rdd.flatMap(lambda x: x).collect()
+            print(f"  Column: {col_name}")
+            print(f"  Distinct values: {distinct_count}")
+            print(f"  Sample: {sample_vals}")  # 5 samples of categories of given column
+            print("   -----")
+
+
+def correlation_runtime_rating(basics_df, ratings_df):  # correlation between runtime and average rating of the movies
+    title_data = basics_df.join(ratings_df, on="tconst")
+
+    # Step 1: Filter out rows with missing or null values for runtimeMinutes and averageRating
+    title_data = title_data.filter(F.col("runtimeMinutes").isNotNull() & F.col("averageRating").isNotNull())
+
+    # Step 2: Ensure columns are of appropriate types
+    title_data = title_data.withColumn("runtimeMinutes", F.col("runtimeMinutes").cast("int"))
+    title_data = title_data.withColumn("averageRating", F.col("averageRating").cast("float"))
+
+    correlation = title_data.stat.corr("runtimeMinutes", "averageRating")
+
+    print(f"Correlation between runtime and average rating: {correlation}")
+
+    return correlation
 
 
 def transform_title_ratings(df: DataFrame) -> DataFrame:
