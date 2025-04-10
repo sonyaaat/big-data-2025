@@ -26,6 +26,7 @@ from imdb_spark_utils import (
     display_numerical_statistics,
     display_categorical_distincts,
     correlation_runtime_rating,
+    display_title_type_info,
     transform_title_ratings,
     transform_title_principals,
     transform_name_basics
@@ -105,6 +106,9 @@ def process_imdb_data() -> Dict[str, DataFrame]:
 
     # correlation between runtime and rating
     correlation_runtime_rating(dataframes["basics"], dataframes["ratings"])
+
+    # categories of titleTypes (e.g. movie, tvSeries, short, video etc)
+    display_title_type_info(dataframes["basics"])
 
     return dataframes
 
