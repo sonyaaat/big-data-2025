@@ -100,6 +100,25 @@ def correlation_runtime_rating(basics_df, ratings_df):  # correlation between ru
     return correlation
 
 
+def display_title_type_info(df: DataFrame) -> None:  # titleType & count of corresponding rows & average runtime
+    # number of each titleType
+    title_type_counts = df.groupBy("titleType").count()
+
+    # average runtime for each titleType
+    avg_runtime_df = df.filter(df.runtimeMinutes.isNotNull()) \
+        .groupBy("titleType") \
+        .agg(F.avg("runtimeMinutes").alias("average_runtime"))
+
+    # joining results
+    joined_df = title_type_counts.join(avg_runtime_df, on="titleType", how="left")
+
+    # if average runtime is NULL (runtime values are not given)
+    joined_df = joined_df.fillna({"average_runtime": 0})
+
+    print("TitleType counts and average runtime:")
+    joined_df.show(truncate=False)
+
+
 def transform_title_ratings(df: DataFrame) -> DataFrame:
     return clean_null_values(df)
 
