@@ -132,3 +132,32 @@ def transform_name_basics(df: DataFrame) -> DataFrame:
     df = df.withColumn("primaryProfession", F.split(F.col("primaryProfession"), ",").cast("array<string>"))
     df = df.withColumn("knownForTitles", F.split(F.col("knownForTitles"), ",").cast("array<string>"))
     return df
+
+
+def export_result(df: DataFrame, result_path: str, show_rows: int = 20, title: str = None,
+                  partition_column: str = None, num_partitions: int = None) -> None:
+    print(f"Results for: {title}")               
+    df.show(show_rows, truncate=False)
+    total_records = df.count()
+    print(f"Total number of records in the result: {total_records}")
+ 
+    for col_name, col_type in df.dtypes:
+        if col_type.startswith("array"):
+            df = df.withColumn(col_name, F.concat_ws(", ", F.col(col_name)))
+ 
+    writer = df.write.option("header", "true")
+                      
+    if partition_column and partition_column in df.columns:
+        print(f"Exporting results with partitioning by column: {partition_column}")
+        writer.partitionBy(partition_column).csv(result_path, mode="overwrite")
+    elif num_partitions and num_partitions > 0:
+        print(f"Exporting results with {num_partitions} partitions")
+        df.repartition(num_partitions).write.option("header", "true").csv(result_path, mode="overwrite")
+    else:
+        target_size_mb = 128
+        estimated_size_bytes = total_records * len(df.columns) * 100
+        estimated_size_mb = estimated_size_bytes / (1024 * 1024)
+        optimal_partitions = max(1, int(estimated_size_mb / target_size_mb))
+ 
+        print(f"Exporting results with automatically determined {optimal_partitions} partitions")
+        df.repartition(optimal_partitions).write.option("header", "true").csv(result_path, mode="overwrite")
