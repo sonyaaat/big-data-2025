@@ -2,7 +2,9 @@ from pyspark.sql import Window
 import pyspark.sql.functions as F
 from pyspark.sql import DataFrame
 from pyspark.sql.functions import desc
+from imdb_spark_utils import export_result
 from typing import Dict
+import config
 
 
 def highest_rated_ukraine_titles(videogames: DataFrame, tv_episodes: DataFrame, ratings: DataFrame) -> DataFrame:
@@ -138,5 +140,40 @@ def top_actors_in_highest_rated_tv_episodes(tv_episodes: DataFrame, principals: 
     return actor_role_count
 
 
-def execute_analytical_requests(dataframes: Dict[str, DataFrame]) -> None:
-    pass
+def execute_analytical_requests(dataframes: Dict[str, DataFrame]):
+    # Extract necessary DataFrames
+    videogames = dataframes["basics"].filter(F.col("titleType") == "videoGame")
+    tv_episodes = dataframes["basics"].filter(F.col("titleType") == "tvEpisode")
+    ratings = dataframes["ratings"]
+    akas = dataframes["akas"]
+    principals = dataframes["principals"]
+    names = dataframes["name"]
+
+    # 1. Highest rated titles from Ukraine
+    highest_rated_ukraine = highest_rated_ukraine_titles(videogames, tv_episodes, ratings)
+    export_result(highest_rated_ukraine, f"{config.RESULT_DIR}/highest_rated_ukraine_titles.csv",
+                  title="Highest rated titles from Ukraine")
+
+    # 2. Most popular video game genres by count
+    most_popular_video_games_genres = most_popular_genres_by_count(videogames)
+    export_result(most_popular_video_games_genres, f"{config.RESULT_DIR}/most_popular_video_games_genres.csv",
+                  title="Most popular video games genres by count")
+
+    # 3. Top-rated video games released after 2015 with more than 10,000 votes
+    top_recent_games = top_recent_videogames(videogames, ratings)
+    export_result(top_recent_games, f"{config.RESULT_DIR}/top_recent_games.csv",
+                  title="Top-rated video games released after 2015 with more than 10000 votes")
+
+    # 4. Most localized video games
+    localized_games = most_localized_videogames(videogames, akas)
+    export_result(localized_games, f"{config.RESULT_DIR}/localized_games.csv", title="Most localized video games")
+
+    # 5. Top video games by rating growth
+    top_rating_growth_games = top_video_games_by_rating_growth(videogames, ratings)
+    export_result(top_rating_growth_games, f"{config.RESULT_DIR}/top_rating_growth_games.csv",
+                  title="Top video games by rating growth")
+
+    # 6. Top actors in highest-rated TV episodes
+    top_actors_highest_rated = top_actors_in_highest_rated_tv_episodes(tv_episodes, principals, ratings, names)
+    export_result(top_actors_highest_rated, f"{config.RESULT_DIR}/top_actors_highest_rated_tv_episodes.csv",
+                  title="Top actors in highest rated TV episodes with names and ratings")
