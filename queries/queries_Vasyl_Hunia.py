@@ -61,7 +61,7 @@ def yearly_genre_trend_analysis(
     filtered_basics = movie_basics.filter(
         F.col("startYear").isNotNull() &
         F.col("genres").isNotNull() &
-        (F.size("genres") > 0) 
+        (F.size("genres") > 0)
     )
 
     filtered_ratings = ratings.filter(
@@ -70,7 +70,6 @@ def yearly_genre_trend_analysis(
     ).select("tconst", "averageRating", "numVotes")
 
     join_df = filtered_basics.join(filtered_ratings, "tconst", "inner")
-
     join_df = join_df.persist()
 
     exploded_df = join_df.withColumn("genre", F.explode("genres"))
@@ -81,7 +80,7 @@ def yearly_genre_trend_analysis(
         F.avg("numVotes").alias("avg_votes")
     )
 
-    window_spec = Window.partitionBy("startYear").orderBy(F.desc("avg_rating"))
+    window_spec = Window.partitionBy("startYear").orderBy(F.desc("movie_count"))
     ranked_df = agg_df.withColumn("rank", F.dense_rank().over(window_spec)) \
                       .orderBy(F.desc("startYear"), "rank")
 
