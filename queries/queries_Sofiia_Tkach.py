@@ -135,3 +135,4 @@ def top_actors_in_highest_rated_tv_episodes(tv_episodes: DataFrame, principals: 
         .orderBy(F.desc("roleCount"), F.desc("avgRating"))
 
     return actor_role_count
+    
