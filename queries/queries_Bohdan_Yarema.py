@@ -81,7 +81,7 @@ def rank_movies_by_rating_within_genre(basics_df: DataFrame, ratings_df: DataFra
     Request 5: Rank movies within each genre based on their average rating.
     """
     print("\nExecuting Request 5: Rank Movies by Rating within Genre")
-    movies_with_ratings = basics_df.join(ratings_df, "tconst")
+    movies_with_ratings = basics_df.join(ratings_df, "tconst").filter(F.col("numVotes") > 100)
     exploded_genres = movies_with_ratings.select("tconst", "primaryTitle", F.explode("genres").alias("genre"), "averageRating")
 
     window_spec = Window.partitionBy("genre").orderBy(F.col("averageRating").desc())
