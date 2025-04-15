@@ -1,6 +1,9 @@
 from pyspark.sql import Window, DataFrame
 import pyspark.sql.functions as F
 from pyspark.sql.functions import desc
+from typing import Dict
+import config
+from imdb_spark_utils import export_result
 
 
 def english_high_rated_movies(basics: DataFrame, ratings: DataFrame) -> DataFrame:
@@ -38,6 +41,7 @@ def directors_best_decade(basics: DataFrame, ratings: DataFrame, crew: DataFrame
                         .orderBy(F.desc("avg_rating"))
 
     return result
+
 
 def top_thriller_directors(basics: DataFrame, ratings: DataFrame, crew: DataFrame, name_df: DataFrame) -> DataFrame:
     thriller_movies = basics.filter((F.array_contains(F.col("genres"), "Thriller")) &
@@ -100,3 +104,29 @@ def versatile_directors(basics: DataFrame, ratings: DataFrame, crew: DataFrame, 
         .orderBy(F.desc("avg_rating"))
 
     return result
+
+
+def execute_analytical_requests(dataframes: Dict[str, DataFrame]) -> None:
+    request1_result = english_high_rated_movies(dataframes["basics"], dataframes["ratings"])
+    export_result(request1_result, f"{config.RESULT_DIR}/english_high_rated_movies",
+                  title="What English-language films have a rating above 7.0?")
+
+    request2_result = directors_best_decade(dataframes['basics'], dataframes['ratings'], dataframes['crew'], dataframes['name_df'])
+    export_result(request2_result, f"{config.RESULT_DIR}/directors_best_decade",
+                  title="In which decade did each director have the best average rating?")
+
+    request3_result = top_thriller_directors(dataframes["basics"], dataframes["ratings"], dataframes['crew'], dataframes['name_df'])
+    export_result(request3_result, f"{config.RESULT_DIR}/top_thriller_directors",
+                  title="Which directors who have worked on at least five films in the Thriller genre receive an average rating of at least 7.0?")
+
+    request4_result = high_rated_documentaries(dataframes["basics"], dataframes["ratings"])
+    export_result(request4_result, f"{config.RESULT_DIR}/high_rated_documentaries",
+                  title="Which documentaries have a rating above 7.5?")
+
+    request5_result = dual_role_persons(dataframes["principals"], dataframes["crew"], dataframes["name_df"])
+    export_result(request5_result, f"{config.RESULT_DIR}/dual_role_persons",
+                  title="Who are the people who work as actors and directors?")
+
+    request6_result = versatile_directors(dataframes["basics"], dataframes["ratings"], dataframes["crew"], dataframes["name_df"])
+    export_result(request6_result, f"{config.RESULT_DIR}/versatile_directors",
+                  title="Which directors working in at least 3 genres have a consistently high average rating (above 7.5)?")

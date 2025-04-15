@@ -2,6 +2,7 @@ from pyspark.sql import Window
 import pyspark.sql.functions as F
 from pyspark.sql import DataFrame
 from pyspark.sql.functions import desc
+from typing import Dict
 
 
 def highest_rated_ukraine_titles(videogames: DataFrame, tv_episodes: DataFrame, ratings: DataFrame) -> DataFrame:
@@ -135,4 +136,7 @@ def top_actors_in_highest_rated_tv_episodes(tv_episodes: DataFrame, principals: 
         .orderBy(F.desc("roleCount"), F.desc("avgRating"))
 
     return actor_role_count
-    
+
+
+def execute_analytical_requests(dataframes: Dict[str, DataFrame]) -> None:
+    pass

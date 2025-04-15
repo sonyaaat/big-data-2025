@@ -4,14 +4,15 @@ from pyspark.sql.functions import col, desc, first, count, avg, when, array_cont
 import os
 from pyspark.sql import DataFrame
 from typing import Dict
+import config
+from imdb_spark_utils import export_result
 
 
 def most_popular_genres_by_region(
         movie_basics: DataFrame,
         akas: DataFrame,
         ratings: DataFrame,
-        results_dir: str,
-        min_votes: int = 1000) -> None:
+        min_votes: int = 1000) -> DataFrame:
 
     filtered_basics = movie_basics.filter(
         F.col("genres").isNotNull() &
@@ -55,8 +56,7 @@ def most_popular_genres_by_region(
 def yearly_genre_trend_analysis(
         movie_basics: DataFrame,
         ratings: DataFrame,
-        results_dir: str,
-        min_votes: int = 1000) -> None:
+        min_votes: int = 1000) -> DataFrame:
 
     filtered_basics = movie_basics.filter(
         F.col("startYear").isNotNull() &
@@ -94,9 +94,8 @@ def most_successful_directors(
         crew: DataFrame,
         ratings: DataFrame,
         name_df: DataFrame,
-        results_dir: str,
         min_votes: int = 1000,
-        min_movies: int = 10) -> None:
+        min_movies: int = 10) -> DataFrame:
 
     directors_df = (crew.filter(F.col("directors").isNotNull())
                     .join(movie_basics.select("tconst"), "tconst", "inner")
@@ -128,10 +127,9 @@ def top_actors_by_genre(
         principals: DataFrame,
         ratings: DataFrame,
         name_df: DataFrame,
-        results_dir: str,
         min_votes: int = 1000,
         min_movies: int = 10,
-        high_rating_threshold: float = 7) -> None:
+        high_rating_threshold: float = 7) -> DataFrame:
 
     movies_with_ratings = (movie_basics.join(ratings, "tconst", "inner")
                            .filter(
@@ -171,8 +169,7 @@ def top_actors_by_genre(
 def most_successful_genre_combinations(
         movie_basics: DataFrame,
         ratings: DataFrame,
-        results_dir: str,
-        min_votes: int = 1000) -> None:
+        min_votes: int = 1000) -> DataFrame:
 
     basics_filtered = movie_basics.filter(F.col("genres").isNotNull() & (F.size("genres") > 1))
 
@@ -200,8 +197,7 @@ def top_directors_by_genre(
         principals: DataFrame,
         name_basics: DataFrame,
         ratings: DataFrame,
-        results_dir: str,
-        min_votes: int = 1000) -> None:
+        min_votes: int = 1000) -> DataFrame:
    
     movies = movie_basics.filter(
         (F.col("titleType") == "movie") & F.col("genres").isNotNull()
@@ -237,3 +233,32 @@ def top_directors_by_genre(
     top_directors_by_genre = ranked_directors.filter(F.col("rank") <= 5).orderBy("genre", "rank")
 
     return top_directors_by_genre
+
+
+def execute_analytical_requests(dataframes: Dict[str, DataFrame]) -> None:
+    basics = dataframes["basics"]
+    movie_basics = basics.filter(F.col("titleType") == "movie")
+
+    request1_result = most_popular_genres_by_region(movie_basics, dataframes["akas"], dataframes["ratings"], 1000)
+    export_result(request1_result, f"{config.RESULT_DIR}/most_popular_genres_by_region",
+                  title="What are the most common film genres among localised titles in different regions of the world?")
+
+    request2_result = yearly_genre_trend_analysis(movie_basics, dataframes["ratings"], 1000)
+    export_result(request2_result, f"{config.RESULT_DIR}/yearly_genre_trend_analysis",
+                  title="How many films of each genre with a minimum of 1000 votes were made each year?")
+
+    request3_result = most_successful_directors(movie_basics, dataframes["crew"], dataframes["ratings"], dataframes["name_df"], 1000, 10)
+    export_result(request3_result, f"{config.RESULT_DIR}/most_successful_directors",
+                  title="Who are the most successful directors in terms of the average rating of their films?")
+
+    request4_result = top_actors_by_genre(movie_basics, dataframes["principals"], dataframes["ratings"], dataframes["name_df"], 1000, 10)
+    export_result(request4_result, f"{config.RESULT_DIR}/top_actors_by_genre",
+                  title="Which actors and actresses are the most successful in different genres, given the number of highly rated (7+) films they have appeared in?")
+
+    request5_result = most_successful_genre_combinations(movie_basics, dataframes["ratings"], 1000)
+    export_result(request5_result, f"{config.RESULT_DIR}/most_successful_genre_combinations",
+                  title="What combinations of film genres show the best results in terms of the number of releases?")
+
+    request6_result = top_directors_by_genre(movie_basics, dataframes["principals"], dataframes["name_df"], dataframes["ratings"], 1000)
+    export_result(request6_result, f"{config.RESULT_DIR}/top_directors_by_genre",
+                  title="Who are the most successful directors in each genre based on the average rating of their films?")

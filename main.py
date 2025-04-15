@@ -32,6 +32,16 @@ from imdb_spark_utils import (
     transform_name_basics
 )
 
+from queries import(
+    queries_Bohdan_Yarema,
+    queries_Khrystyna_Melnychuk,
+    queries_Sofiia_Tkach,
+    queries_Ostapenko_Angelina,
+    queries_Vasyl_Hunia,
+    queries_Dmytro_Chupryna
+)
+
+
 spark_session = initialize_spark("IMDB Data Processing")
 
 
@@ -113,5 +123,16 @@ def process_imdb_data() -> Dict[str, DataFrame]:
     return dataframes
 
 
+def main() -> None:
+    dataframes = process_imdb_data()
+    
+    queries_Bohdan_Yarema.execute_analytical_requests(dataframes)
+    queries_Ostapenko_Angelina.execute_analytical_requests(dataframes)
+    queries_Khrystyna_Melnychuk.execute_analytical_requests(dataframes)
+    queries_Vasyl_Hunia.execute_analytical_requests(dataframes)
+    queries_Sofiia_Tkach.execute_analytical_requests(dataframes)
+    queries_Dmytro_Chupryna.execute_analytical_requests(dataframes)
+
+
 if __name__ == "__main__":
-    process_imdb_data()
+    main()
