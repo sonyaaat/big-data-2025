@@ -46,5 +46,5 @@ docker run -it --name my-spark-container my-spark-img
 - **Vasyl Hunia**
 - **Dmytro Chupryna**
 - **Bohdan Yarema**
-- 
+
 *Department of AI, NULP, 2025*
