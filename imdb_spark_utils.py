@@ -5,7 +5,14 @@ from typing import List, Optional
 
 
 def initialize_spark(app_name: str = "IMDB Data Processor") -> SparkSession:
-    return SparkSession.builder.appName(app_name).getOrCreate()
+    return SparkSession.builder \
+        .appName(app_name) \
+        .config("spark.driver.memory", "8g") \
+        .config("spark.executor.memory", "8g") \
+        .config("spark.memory.offHeap.enabled", "true") \
+        .config("spark.memory.offHeap.size", "4g") \
+        .config("spark.sql.shuffle.partitions", 50) \
+        .getOrCreate()
 
 
 def load_dataframe(spark: SparkSession, schema: t.StructType, file_path: str) -> DataFrame:

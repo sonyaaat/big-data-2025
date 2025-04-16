@@ -3,7 +3,7 @@ from pyspark.sql import DataFrame
 from pyspark.sql.window import Window
 import pyspark.sql.functions as F
 from typing import Dict
-import config
+from config import Config
 
 
 # Query 1
@@ -144,26 +144,26 @@ def longest_series_with_ratings(df_basics: DataFrame, df_episode: DataFrame, df_
 
 def execute_analytical_requests(dataframes: Dict[str, DataFrame]) -> None:
     request1_result = top_ua_romantic_comedies(dataframes["basics"], dataframes["akas"], dataframes["ratings"])
-    export_result(request1_result, f"{config.RESULT_DIR}/top_ua_romantic_comedies",
+    export_result(request1_result, f"{Config.RESULT_DIR}/top_ua_romantic_comedies",
                   title="Top romantic comedies available in Ukrainian")
 
     request2_result = videogames_by_director(dataframes['basics'], dataframes['crew'], dataframes['name'])
-    export_result(request2_result, f"{config.RESULT_DIR}/videogames_by_director",
+    export_result(request2_result, f"{Config.RESULT_DIR}/videogames_by_director",
                   title="Count of videogames for each game director")
 
     request3_result = top_titles_by_randall_ryan(dataframes["name"], dataframes["crew"], dataframes["basics"], dataframes["ratings"])
-    export_result(request3_result, f"{config.RESULT_DIR}/top_titles_by_randall_ryan",
+    export_result(request3_result, f"{Config.RESULT_DIR}/top_titles_by_randall_ryan",
                   title="Top games by Randall Ryan")
 
     request4_result = top_rated_series_by_region(dataframes["basics"], dataframes["ratings"], dataframes["akas"])
-    export_result(request4_result, f"{config.RESULT_DIR}/top_rated_series_by_region",
+    export_result(request4_result, f"{Config.RESULT_DIR}/top_rated_series_by_region",
                   title="Top-3 TV series for each region")
 
     request5_result = longest_movie_per_genre(dataframes["basics"])
-    export_result(request5_result, f"{config.RESULT_DIR}/longest_movie_per_genre",
+    export_result(request5_result, f"{Config.RESULT_DIR}/longest_movie_per_genre",
                   title="The longest movie of each genre")
 
     request6_result = longest_series_with_ratings(dataframes["basics"], dataframes["episode"], dataframes["ratings"])
-    export_result(request6_result, f"{config.RESULT_DIR}/longest_series_with_ratings",
+    export_result(request6_result, f"{Config.RESULT_DIR}/longest_series_with_ratings",
                   title="Longest series with ratings")
                   

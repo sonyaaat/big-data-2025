@@ -42,9 +42,6 @@ from queries import(
 )
 
 
-spark_session = initialize_spark("IMDB Data Processing")
-
-
 def check_pyspark() -> None:
     print("Initializing Spark Session...")
     spark = SparkSession.builder \
@@ -77,7 +74,7 @@ def check_pyspark() -> None:
     spark.stop()
 
 
-def process_imdb_data() -> Dict[str, DataFrame]:
+def process_imdb_data(spark_session) -> Dict[str, DataFrame]:
     dataframes = {}
 
     dataframes["basics"] = transform_title_basics(
@@ -124,7 +121,8 @@ def process_imdb_data() -> Dict[str, DataFrame]:
 
 
 def main() -> None:
-    dataframes = process_imdb_data()
+    spark_session = initialize_spark("IMDB Data Processing")
+    dataframes = process_imdb_data(spark_session)
     
     queries_Bohdan_Yarema.execute_analytical_requests(dataframes)
     queries_Ostapenko_Angelina.execute_analytical_requests(dataframes)
@@ -133,6 +131,8 @@ def main() -> None:
     queries_Sofiia_Tkach.execute_analytical_requests(dataframes)
     queries_Dmytro_Chupryna.execute_analytical_requests(dataframes)
 
+    spark_session.stop()
 
 if __name__ == "__main__":
     main()
+    

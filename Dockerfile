@@ -11,5 +11,10 @@ ARG PYSPARK_VERSION=3.2.0
 RUN pip --no-cache-dir install pyspark==${PYSPARK_VERSION}
 COPY . .
 
+ENV PYSPARK_SUBMIT_ARGS="--driver-memory 8g --executor-memory 8g pyspark-shell"
+ENV SPARK_DRIVER_MEMORY=8g
+ENV SPARK_EXECUTOR_MEMORY=8g
+ENV JAVA_OPTS="-XX:+UseG1GC -Xmx8g"
+
 RUN chmod +x /run_scripts.sh
 CMD ["/run_scripts.sh"]

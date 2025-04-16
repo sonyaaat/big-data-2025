@@ -4,7 +4,7 @@ from pyspark.sql import DataFrame
 from pyspark.sql.functions import desc
 from imdb_spark_utils import export_result
 from typing import Dict
-import config
+from config import Config
 
 
 def find_top_rated_recent_movies(basics_df: DataFrame, ratings_df: DataFrame) -> DataFrame:
@@ -118,26 +118,26 @@ def cumulative_avg_rating_tv_series(basics_df: DataFrame, ratings_df: DataFrame,
 
 def execute_analytical_requests(dataframes: Dict[str, DataFrame]) -> None:
     request1_result = find_top_rated_recent_movies(dataframes["basics"], dataframes["ratings"])
-    export_result(request1_result, f"{config.RESULT_DIR}/top_rated_recent_movies",
+    export_result(request1_result, f"{Config.RESULT_DIR}/top_rated_recent_movies",
                   title="Top 10 Highest-Rated Movies (>= 5000 votes, > 2000)")
 
     request2_result = find_popular_actors_in_highly_rated_movies(dataframes["basics"], dataframes["ratings"],
                                                                  dataframes["principals"], dataframes["name"])
-    export_result(request2_result, f"{config.RESULT_DIR}/popular_actors_highly_rated",
+    export_result(request2_result, f"{Config.RESULT_DIR}/popular_actors_highly_rated",
                   title="Actors in Highly Rated Movies (>= 3 known titles)")
 
     request3_result = calculate_genre_popularity_rating(dataframes["basics"], dataframes["ratings"])
-    export_result(request3_result, f"{config.RESULT_DIR}/genre_popularity_rating",
+    export_result(request3_result, f"{Config.RESULT_DIR}/genre_popularity_rating",
                   title="Average Votes and Rating by Genre")
 
     request4_result = average_runtime_by_title_type(dataframes["basics"])
-    export_result(request4_result, f"{config.RESULT_DIR}/avg_runtime_by_type",
+    export_result(request4_result, f"{Config.RESULT_DIR}/avg_runtime_by_type",
                   title="Average Runtime by Title Type (>= 1000 entries)")
 
     request5_result = rank_movies_by_rating_within_genre(dataframes["basics"], dataframes["ratings"])
-    export_result(request5_result, f"{config.RESULT_DIR}/ranked_movies_by_genre",
+    export_result(request5_result, f"{Config.RESULT_DIR}/ranked_movies_by_genre",
                   title="Movies Ranked by Rating within Genre")
 
     request6_result = cumulative_avg_rating_tv_series(dataframes["basics"], dataframes["ratings"], dataframes["episode"])
-    export_result(request6_result, f"{config.RESULT_DIR}/cumulative_avg_rating_series",
+    export_result(request6_result, f"{Config.RESULT_DIR}/cumulative_avg_rating_series",
                   title="Cumulative Average Rating of Episodes within TV Series")

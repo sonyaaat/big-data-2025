@@ -3,7 +3,7 @@ from pyspark.sql import functions as F
 from pyspark.sql.window import Window
 from imdb_spark_utils import export_result
 from typing import Dict
-import config
+from config import Config
 
 
 def get_ukrainian_titles(akas: DataFrame) -> DataFrame:
@@ -72,25 +72,25 @@ def execute_analytical_requests(dataframes: Dict[str, DataFrame]) -> None:
     movie_basics = basics.filter(F.col("titleType") == "movie")
 
     request1_result = get_ukrainian_titles(dataframes["akas"])
-    export_result(request1_result, f"{config.RESULT_DIR}/get_ukrainian_titles",
+    export_result(request1_result, f"{Config.RESULT_DIR}/get_ukrainian_titles",
                   title="What movies have Ukrainian titles?")
 
     request2_result = get_long_movies_with_ranking(movie_basics, dataframes["ratings"])
-    export_result(request2_result, f"{config.RESULT_DIR}/get_long_movies_with_ranking",
+    export_result(request2_result, f"{Config.RESULT_DIR}/get_long_movies_with_ranking",
                   title="Which movies are longer than 2 hours and have the highest rating?")
 
     request3_result = get_top_rated_movies(movie_basics, dataframes["ratings"])
-    export_result(request3_result, f"{config.RESULT_DIR}/get_top_rated_movies",
+    export_result(request3_result, f"{Config.RESULT_DIR}/get_top_rated_movies",
                   title="Which movies have a rating of more than 8 and more than 10,000 votes?")
 
     request4_result = get_genre_avg_ratings(movie_basics, dataframes["ratings"])
-    export_result(request4_result, f"{config.RESULT_DIR}/get_genre_avg_ratings",
+    export_result(request4_result, f"{Config.RESULT_DIR}/get_genre_avg_ratings",
                   title="What is the average rating of movies in each genre?")
 
     request5_result = get_top_productive_actors(dataframes['principals'], dataframes["name"])
-    export_result(request5_result, f"{config.RESULT_DIR}/get_top_productive_actors",
+    export_result(request5_result, f"{Config.RESULT_DIR}/get_top_productive_actors",
                   title="Who are the top 3 most productive actors based on the number of films they have appeared in, among those who have acted in at least 10 films?")
 
     request6_result = get_top_actors_in_high_rated_popular_movies(dataframes)
-    export_result(request6_result, f"{config.RESULT_DIR}/get_top_actors_in_high_rated_popular_movies",
+    export_result(request6_result, f"{Config.RESULT_DIR}/get_top_actors_in_high_rated_popular_movies",
                   title="Which actors most often star in movies with a high rating (over 8.0)?")
