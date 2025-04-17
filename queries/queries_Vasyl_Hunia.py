@@ -83,7 +83,7 @@ def most_successful_directors(
                     .join(ratings, "tconst", "inner")
                     .filter((F.col("numVotes") >= min_votes) & F.col("averageRating").isNotNull())
                     .join(name_df.select("nconst", "primaryName"),
-                          F.col("director_id") == F.col("nconst"), "left")
+                          F.col("director_id") == F.col("nconst"), "inner")
                     .select("tconst", F.col("primaryName").alias("director"), "averageRating", "numVotes"))
 
     directors_agg = (directors_df.groupBy("director")
