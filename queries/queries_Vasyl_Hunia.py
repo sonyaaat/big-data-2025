@@ -11,9 +11,9 @@ from imdb_spark_utils import export_result
 def most_popular_genres_by_region(
         movie_basics: DataFrame,
         akas: DataFrame,
-        ratings: DataFrame) -> None:
+        ratings: DataFrame) -> DataFrame:
 
-    filtered_basics = movie_basics.filter( F.col("genres").isNotNull() & (F.size("genres") > 0))
+    filtered_basics = movie_basics.filter( F.col("genres").isNotNull())
 
     basics_with_ratings = filtered_basics.join( ratings, "tconst", "inner")
 
@@ -26,11 +26,7 @@ def most_popular_genres_by_region(
 
     exploded_df = pre_join_df.withColumn("genre", F.explode("genres"))
 
-    filtered_df = exploded_df.filter(F.col("genre").isNotNull())
-
-    filtered_df = filtered_df.persist()
-
-    agg_df = filtered_df.groupBy("region", "genre").agg(
+    agg_df = exploded_df.groupBy("region", "genre").agg(
         F.countDistinct(filtered_basics.tconst).alias("title_count"),
         F.avg("averageRating").alias("avg_rating")
     )
@@ -39,14 +35,12 @@ def most_popular_genres_by_region(
     ranked_df = agg_df.withColumn("rank", F.dense_rank().over(window_spec)) \
                       .orderBy("region", "rank")
 
-    filtered_df.unpersist()
-
     return ranked_df
 
 
 def yearly_genre_trend_analysis(
         movie_basics: DataFrame,
-        ratings: DataFrame) -> None:
+        ratings: DataFrame) -> DataFrame:
 
     filtered_basics = movie_basics.filter(
         F.col("startYear").isNotNull() &
@@ -58,7 +52,7 @@ def yearly_genre_trend_analysis(
         F.col("averageRating").isNotNull()
     ).select("tconst", "averageRating", "numVotes")
 
-    join_df = filtered_basics.join(filtered_ratings, "tconst", "inner").persist()
+    join_df = filtered_basics.join(filtered_ratings, "tconst", "inner")
 
     exploded_df = join_df.withColumn("genre", F.explode("genres"))
 
@@ -72,8 +66,6 @@ def yearly_genre_trend_analysis(
     ranked_df = agg_df.withColumn("rank", F.dense_rank().over(window_spec)) \
                       .orderBy(F.desc("startYear"), "rank")
 
-    join_df.unpersist()
-
     return ranked_df
 
 
@@ -83,7 +75,7 @@ def most_successful_directors(
         ratings: DataFrame,
         name_df: DataFrame,
         min_votes: int = 1000,
-        min_movies: int = 10) -> None:
+        min_movies: int = 10) -> DataFrame:
 
     directors_df = (crew.filter(F.col("directors").isNotNull())
                     .join(movie_basics.select("tconst"), "tconst", "inner")
@@ -117,7 +109,7 @@ def top_actors_by_genre(
         name_df: DataFrame,
         min_votes: int = 1000,
         min_movies: int = 10,
-        high_rating_threshold: float = 7) -> None:
+        high_rating_threshold: float = 7) -> DataFrame:
 
     movies_with_ratings = (movie_basics.join(ratings, "tconst", "inner")
                            .filter(
@@ -156,7 +148,7 @@ def top_actors_by_genre(
 
 def most_successful_genre_combinations(
         movie_basics: DataFrame,
-        ratings: DataFrame) -> None:
+        ratings: DataFrame) -> DataFrame:
 
     basics_filtered = movie_basics.filter(F.col("genres").isNotNull() & (F.size("genres") > 1))
 
@@ -184,7 +176,7 @@ def top_directors_by_genre(
         principals: DataFrame,
         name_basics: DataFrame,
         ratings: DataFrame,
-        min_votes: int = 1000) -> None:
+        min_votes: int = 1000) -> DataFrame:
 
     movies = movie_basics.filter(
         (F.col("titleType") == "movie") & F.col("genres").isNotNull()
@@ -249,4 +241,3 @@ def execute_analytical_requests(dataframes: Dict[str, DataFrame]) -> None:
     request6_result = top_directors_by_genre(movie_basics, dataframes["principals"], dataframes["name"], dataframes["ratings"], 1000)
     export_result(request6_result, f"{Config.RESULT_DIR}/top_directors_by_genre",
                   title="Who are the most successful directors in each genre based on the average rating of their films?")
-        
